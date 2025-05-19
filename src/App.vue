@@ -53,29 +53,46 @@ export default {
   },
   methods: {
     updateProduct(updatedProduct) {
-      // Find the product in the array
-      const index = this.products.findIndex(p => p.id === updatedProduct.id);
-      if (index !== -1) {
-        // Create a new update record
-        const update = {
-          timestamp: new Date().toISOString(),
-          productId: updatedProduct.id,
-          oldQuantity: this.products[index].stock,
-          newQuantity: updatedProduct.stock,
-          type: updatedProduct.stock > this.products[index].stock ? 'restock' : 'update',
-          user: 'admin'
-        };
-        
-        // Update the product
-        this.products[index] = { ...updatedProduct };
-        
-        // Add the update to inventory updates
-        this.inventoryUpdates.unshift(update);
-        
-        // Show success message
-        alert('Product updated successfully!');
-      }
-    }
+  // Check if this is a new product (no existing ID in the array)
+  const index = this.products.findIndex(p => p.id === updatedProduct.id);
+  
+  if (index === -1) {
+    // This is a new product, add it to the array
+    this.products.push(updatedProduct);
+    
+    // Add a new inventory update record
+    const update = {
+      timestamp: new Date().toISOString(),
+      productId: updatedProduct.id,
+      oldQuantity: 0,
+      newQuantity: updatedProduct.stock,
+      type: 'add',
+      user: 'admin'
+    };
+    
+    this.inventoryUpdates.unshift(update);
+  } else {
+    // This is an existing product, update it
+    // Create a new update record
+    const update = {
+      timestamp: new Date().toISOString(),
+      productId: updatedProduct.id,
+      oldQuantity: this.products[index].stock,
+      newQuantity: updatedProduct.stock,
+      type: updatedProduct.stock > this.products[index].stock ? 'restock' : 'update',
+      user: 'admin'
+    };
+    
+    // Update the product
+    this.products[index] = { ...updatedProduct };
+    
+    // Add the update to inventory updates
+    this.inventoryUpdates.unshift(update);
+  }
+  
+  // Show success message
+  alert('Inventory updated successfully!');
+}
   }
 };
 </script>
