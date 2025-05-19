@@ -33,7 +33,7 @@
       
       <div class="summary-stats d-flex justify-content-between text-center">
         <div class="stat-item">
-          <div class="stat-value">RM{{ formatCurrency(totalSales) }}</div>
+          <div class="stat-value">RM{{ totalSales.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}</div>
           <div class="stat-label">Total Sales</div>
         </div>
         <div class="stat-item">
