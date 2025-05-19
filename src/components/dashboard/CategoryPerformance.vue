@@ -58,7 +58,7 @@ export default {
             beginAtZero: true,
             title: {
               display: true,
-              text: 'Sales ($)'
+              text: 'Sales (RM)'
             }
           }
         }
