@@ -233,6 +233,48 @@ export default {
 </script>
 
 <style scoped>
+.card-header {
+  background-color: #e9ecef; /* Light grey */
+  margin-top: 0;
+  margin-left: 0;
+  margin-right: 0;
+  padding: 1rem;
+  border-bottom: 1px solid #dee2e6;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.card-title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 500;
+}
+
+.view-options {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.refresh-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #495057;
+  font-size: 1rem;
+}
+
+.refresh-btn:hover {
+  color: #000;
+}
+
+.time-selector {
+  padding: 0.25rem 0.5rem;
+  border: 1px solid #ced4da;
+  border-radius: 0.25rem;
+  font-size: 0.9rem;
+}
 .inventory-overview {
   background-color: white;
   border-radius: 8px;
