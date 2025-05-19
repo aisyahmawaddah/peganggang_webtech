@@ -4,35 +4,17 @@
     <div class="card-header">
       <h5 class="card-title">Top Products</h5>
     </div>
-    <div class="card-body p-0"> <!-- Removed padding for better table appearance -->
+    <div class="card-body p-0">
       <div class="table-container">
-        <table class="table mb-0"> <!-- Removed bottom margin -->
+        <table class="table mb-0">
           <thead class="sticky-top bg-white">
             <tr>
-              <th @click="sortBy('name')">
-                Product Name
-                <i v-if="sortKey === 'name'" :class="getSortIconClass()"></i>
-              </th>
-              <th @click="sortBy('category')">
-                Category
-                <i v-if="sortKey === 'category'" :class="getSortIconClass()"></i>
-              </th>
-              <th @click="sortBy('price')">
-                Price
-                <i v-if="sortKey === 'price'" :class="getSortIconClass()"></i>
-              </th>
-              <th @click="sortBy('stock')">
-                Stock
-                <i v-if="sortKey === 'stock'" :class="getSortIconClass()"></i>
-              </th>
-              <th @click="sortBy('sold')">
-                Sold
-                <i v-if="sortKey === 'sold'" :class="getSortIconClass()"></i>
-              </th>
-              <th @click="sortBy('sales')">
-                Sales
-                <i v-if="sortKey === 'sales'" :class="getSortIconClass()"></i>
-              </th>
+              <th>Product Name</th>
+              <th>Category</th>
+              <th>Price</th>
+              <th>Stock</th>
+              <th>Sold</th>
+              <th>Sales</th>
               <th>Status</th>
             </tr>
           </thead>
@@ -62,46 +44,13 @@ export default {
   props: {
     products: Array
   },
-  data() {
-    return {
-      sortKey: 'sales', // Default sort by sales
-      sortDir: -1 // -1 for descending, 1 for ascending
-    };
-  },
   computed: {
     sortedProducts() {
-      return [...this.products].sort((a, b) => {
-        let aValue = a[this.sortKey];
-        let bValue = b[this.sortKey];
-        
-        // Handle string values (case-insensitive sorting)
-        if (typeof aValue === 'string' && typeof bValue === 'string') {
-          aValue = aValue.toLowerCase();
-          bValue = bValue.toLowerCase();
-        }
-        
-        if (aValue < bValue) return -1 * this.sortDir;
-        if (aValue > bValue) return 1 * this.sortDir;
-        return 0;
-      });
+      // Sort products by sales in descending order by default
+      return [...this.products].sort((a, b) => b.sales - a.sales);
     }
   },
   methods: {
-    sortBy(key) {
-      // If the same key is clicked, toggle the direction
-      if (this.sortKey === key) {
-        this.sortDir *= -1;
-      } else {
-        this.sortKey = key;
-        // Default to descending for sales and sold, ascending for others
-        this.sortDir = (key === 'sales' || key === 'sold') ? -1 : 1;
-      }
-    },
-    getSortIconClass() {
-      return this.sortDir === 1 
-        ? 'bi bi-caret-up-fill' 
-        : 'bi bi-caret-down-fill';
-    },
     getStatusClass(product) {
       if (product.stock === 0) {
         return 'bg-danger';
@@ -142,22 +91,8 @@ export default {
 }
 
 th {
-  cursor: pointer;
-  position: relative;
   background-color: #f8f9fa;
-  padding-right: 20px; /* Space for sort icon */
-}
-
-th:hover {
-  background-color: #e9ecef;
-}
-
-th i {
-  position: absolute;
-  right: 5px;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 0.75rem;
+  font-weight: 600;
 }
 
 .badge {
