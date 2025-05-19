@@ -21,7 +21,7 @@
       </div>
     </nav>
 
-    <main class="content">
+    <!-- <main class="content">
       <dashboard-page v-if="currentPage === 'dashboard'" 
                      :products="products"
                      :sales="salesHistory"
@@ -29,6 +29,19 @@
       <update-page v-if="currentPage === 'update'" 
                   :products="products"
                   @update-product="updateProduct"></update-page>
+    </main> -->
+    <main class="content">
+      <dashboard-page 
+        v-if="currentPage === 'dashboard'" 
+        :products="products"
+        :sales="salesHistory"
+        :updates="inventoryUpdates" />
+        
+      <update-page 
+        v-if="currentPage === 'update'" 
+        :products="products"
+        @update-product="updateProduct"
+        @delete-product="deleteProduct" />
     </main>
   </div>
 </template>
@@ -92,8 +105,16 @@ export default {
   
   // Show success message
   alert('Inventory updated successfully!');
-}
+},
+
+deleteProduct(productToDelete) {
+    const index = this.products.findIndex(p => p.id === productToDelete.id);
+    if (index !== -1) {
+      this.products.splice(index, 1);
+      alert(`"${productToDelete.name}" has been deleted.`);
+    }
   }
+}
 };
 </script>
 
