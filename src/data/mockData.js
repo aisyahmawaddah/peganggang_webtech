@@ -81,21 +81,14 @@ export default {
     }
   ],
 
-  // Sample inventory updates
+  // Enhanced inventory updates with various change types
   inventoryUpdates: [
+    // Stock changes (sales and restocks)
     {
       timestamp: "2025-05-01T09:23:44",
       productId: 1,
       oldQuantity: 50,
       newQuantity: 45,
-      type: "sale",
-      user: "system"
-    },
-    {
-      timestamp: "2025-05-03T14:12:33",
-      productId: 3,
-      oldQuantity: 14,
-      newQuantity: 12,
       type: "sale",
       user: "system"
     },
@@ -108,20 +101,82 @@ export default {
       user: "admin"
     },
     {
+      timestamp: "2025-05-03T14:12:33",
+      productId: 3,
+      oldQuantity: 14,
+      newQuantity: 12,
+      type: "sale",
+      user: "system"
+    },
+    
+    // Name changes
+    {
       timestamp: "2025-05-04T11:32:16",
       productId: 5,
-      oldQuantity: 60,
-      newQuantity: 65,
-      type: "restock",
-      user: "admin"
+      oldQuantity: 60, 
+      newQuantity: 60,
+      type: "name_change",
+      user: "admin",
+      oldName: "Wireless Mouse",
+      newName: "Gaming Mouse"
     },
+    
+    // Price changes
     {
       timestamp: "2025-05-05T15:17:42",
       productId: 4,
-      oldQuantity: 35,
+      oldQuantity: 32,
       newQuantity: 32,
-      type: "sale",
-      user: "system"
+      type: "price_change",
+      user: "admin",
+      oldPrice: 69.99,
+      newPrice: 79.99
+    },
+    
+    // Category changes
+    {
+      timestamp: "2025-05-06T09:10:22",
+      productId: 7,
+      oldQuantity: 85,
+      newQuantity: 85,
+      type: "category_change",
+      user: "admin",
+      oldCategory: "Mobile",
+      newCategory: "Accessories"
+    },
+    
+    // Reorder level changes
+    {
+      timestamp: "2025-05-07T13:45:30",
+      productId: 6,
+      oldQuantity: 3,
+      newQuantity: 3,
+      type: "reorder_change",
+      user: "admin",
+      oldReorderLevel: 5,
+      newReorderLevel: 7
+    },
+    
+    // Product added
+    {
+      timestamp: "2025-05-08T10:20:15",
+      productId: 7,
+      oldQuantity: 0,
+      newQuantity: 85,
+      type: "add",
+      user: "admin",
+      productName: "Tablet Stand"
+    },
+    
+    // Product deleted (for a non-existent product to simulate deletion)
+    {
+      timestamp: "2025-05-09T08:45:12",
+      productId: 8,
+      oldQuantity: 10,
+      newQuantity: 0,
+      type: "delete",
+      user: "admin",
+      productName: "Phone Charger"
     }
   ],
   

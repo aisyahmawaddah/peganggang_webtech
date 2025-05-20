@@ -80,20 +80,80 @@ export default {
       oldQuantity: 0,
       newQuantity: updatedProduct.stock,
       type: 'add',
-      user: 'admin'
+      user: 'admin',
+      productName: updatedProduct.name
     };
     
     this.inventoryUpdates.unshift(update);
   } else {
-    // This is an existing product, update it
-    // Create a new update record
+    // This is an existing product - get the old product
+    const oldProduct = this.products[index];
+    
+    // Compare each field to detect what changed
+    const changes = {};
+    
+    // Check for name changes
+    if (oldProduct.name !== updatedProduct.name) {
+      changes.oldName = oldProduct.name;
+      changes.newName = updatedProduct.name;
+      changes.type = 'name_change';
+    }
+    
+    // Check for category changes
+    if (oldProduct.category !== updatedProduct.category) {
+      changes.oldCategory = oldProduct.category;
+      changes.newCategory = updatedProduct.category;
+      changes.type = changes.type || 'category_change';
+    }
+    
+    // Check for price changes
+    if (oldProduct.price !== updatedProduct.price) {
+      changes.oldPrice = oldProduct.price;
+      changes.newPrice = updatedProduct.price;
+      changes.type = changes.type || 'price_change';
+    }
+    
+    // Check for reorder level changes
+    if (oldProduct.reorderLevel !== updatedProduct.reorderLevel) {
+      changes.oldReorderLevel = oldProduct.reorderLevel;
+      changes.newReorderLevel = updatedProduct.reorderLevel;
+      changes.type = changes.type || 'reorder_change';
+    }
+    
+    // Check for stock changes
+    if (oldProduct.stock !== updatedProduct.stock) {
+      changes.oldQuantity = oldProduct.stock;
+      changes.newQuantity = updatedProduct.stock;
+      changes.type = changes.type || (updatedProduct.stock > oldProduct.stock ? 'restock' : 'sale');
+    } else {
+      // If stock didn't change, but we're tracking other changes, still record the quantities
+      changes.oldQuantity = oldProduct.stock;
+      changes.newQuantity = updatedProduct.stock;
+    }
+    
+    // If no specific change was detected, mark as generic update
+    if (!changes.type) {
+      changes.type = 'update';
+    }
+    
+    // Create the update record with all detected changes
     const update = {
       timestamp: new Date().toISOString(),
       productId: updatedProduct.id,
-      oldQuantity: this.products[index].stock,
-      newQuantity: updatedProduct.stock,
-      type: updatedProduct.stock > this.products[index].stock ? 'restock' : 'update',
-      user: 'admin'
+      oldQuantity: changes.oldQuantity || oldProduct.stock,
+      newQuantity: changes.newQuantity || updatedProduct.stock,
+      type: changes.type,
+      user: 'admin',
+      
+      // Include all specific change fields
+      ...(changes.oldName && { oldName: changes.oldName }),
+      ...(changes.newName && { newName: changes.newName }),
+      ...(changes.oldCategory && { oldCategory: changes.oldCategory }),
+      ...(changes.newCategory && { newCategory: changes.newCategory }),
+      ...(changes.oldPrice && { oldPrice: changes.oldPrice }),
+      ...(changes.newPrice && { newPrice: changes.newPrice }),
+      ...(changes.oldReorderLevel && { oldReorderLevel: changes.oldReorderLevel }),
+      ...(changes.newReorderLevel && { newReorderLevel: changes.newReorderLevel })
     };
     
     // Update the product
@@ -107,15 +167,29 @@ export default {
   alert('Inventory updated successfully!');
 },
 
+// Also improve the deleteProduct method to track deletions
 deleteProduct(productToDelete) {
-    const index = this.products.findIndex(p => p.id === productToDelete.id);
-    if (index !== -1) {
-      this.products.splice(index, 1);
-      alert(`"${productToDelete.name}" has been deleted.`);
-    }
+  const index = this.products.findIndex(p => p.id === productToDelete.id);
+  if (index !== -1) {
+    // Create a delete update record before removing the product
+    const update = {
+      timestamp: new Date().toISOString(),
+      productId: productToDelete.id,
+      oldQuantity: productToDelete.stock,
+      newQuantity: 0,
+      type: 'delete',
+      user: 'admin',
+      productName: productToDelete.name
+    };
+    
+    // Add the update to inventory updates
+    this.inventoryUpdates.unshift(update);
+    
+    // Remove the product
+    this.products.splice(index, 1);
+    alert(`"${productToDelete.name}" has been deleted.`);
   }
-}
-};
+}}};
 </script>
 
 <style>
