@@ -56,12 +56,18 @@
                     <span class="price">${{ product.price.toFixed(2) }}</span>
                   </div>
                 </div>
-                <div class="item-stock">
-                  <div class="stock-count" :class="getStockClass(product)">
-                    {{ product.stock }}
-                  </div>
-                  <small>in stock</small>
+                <div class="item-stock text-center">
+                <div class="stock-count" :class="getStockClass(product)">
+                  {{ product.stock }}
                 </div>
+                <small class="d-block mb-2">in stock</small>
+
+                <!-- Delete Button -->
+                <button @click="deleteProduct(product)" class="btn btn-danger btn-sm">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </div>
+
               </div>
             </div>
           </div>
@@ -85,7 +91,7 @@ export default {
   },
   data() {
     return {
-      mode: 'edit', // 'edit' or 'add'
+      mode: 'edit',
       selectedProduct: null
     };
   },
@@ -94,29 +100,26 @@ export default {
       this.$emit('update-product', product);
     },
     addProduct(product) {
-      // Generate a new unique ID (highest ID + 1)
       const maxId = Math.max(...this.products.map(p => p.id), 0);
       const newProduct = {
         ...product,
         id: maxId + 1
       };
-      
-      // Emit event to parent component
       this.$emit('update-product', newProduct);
-      
-      // Switch back to edit mode after adding
       this.mode = 'edit';
-      
-      // Show success message
       alert(`Product "${newProduct.name}" added successfully!`);
     },
+    deleteProduct(product) {
+      const confirmDelete = confirm(`Are you sure you want to delete "${product.name}"?`);
+      if (confirmDelete) {
+        this.$emit('delete-product', product);
+      }
+    },
     getCategories() {
-      // Get unique categories from products or use mockData
       if (this.products && this.products.length > 0) {
         const uniqueCategories = [...new Set(this.products.map(p => p.category))];
         return uniqueCategories.sort();
       } else {
-        // Fallback to common categories
         return ["Electronics", "Accessories", "Gaming"];
       }
     },
@@ -187,7 +190,7 @@ export default {
 
 .item-stock {
   text-align: center;
-  min-width: 60px;
+  min-width: 80px;
 }
 
 .stock-count {

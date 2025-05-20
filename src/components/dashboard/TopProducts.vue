@@ -22,10 +22,10 @@
             <tr v-for="product in sortedProducts" :key="product.id">
               <td>{{ product.name }}</td>
               <td>{{ product.category }}</td>
-              <td>${{ product.price.toFixed(2) }}</td>
+              <td>RM {{ product.price.toFixed(2) }}</td>
               <td>{{ product.stock }}</td>
               <td>{{ product.sold }}</td>
-              <td>${{ product.sales.toFixed(2) }}</td>
+              <td>RM {{ product.sales.toFixed(2) }}</td>
               <td>
                 <span class="badge" :class="getStatusClass(product)">
                   {{ getStatusText(product) }}
