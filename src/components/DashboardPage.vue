@@ -1,6 +1,6 @@
 <template>
   <div class="dashboard">
-    <h1 class="page-title mb-4">Inventory Dashboard</h1>
+    <h1 class="page-title mb-4">FlexStock Dashboard</h1>
     
     <div class="row mb-4">
       <div class="col-md-4">
@@ -53,7 +53,7 @@ export default {
 
 <style scoped>
 .page-title {
-  color: #343a40;
+  color: #ffffff;
   font-weight: 600;
 }
 </style>

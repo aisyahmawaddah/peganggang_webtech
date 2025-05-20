@@ -1,7 +1,7 @@
 <!-- src/components/UpdatePage.vue -->
 <template>
   <div>
-    <h1 class="mb-4">Inventory Management</h1>
+    <h1 class="mb-4">FlexStock Inventory Management</h1>
     
     <!-- Tabs for switching between Edit and Add modes -->
     <ul class="nav nav-tabs mb-4">
@@ -38,7 +38,7 @@
       <!-- Right side: Products List -->
       <div class="col-md-5">
         <div class="card">
-          <div class="card-header bg-primary text-white">
+          <div class="card-header text-white">
             <h5 class="card-title mb-0">
               <i class="bi bi-list-ul"></i> Product Inventory
               <span class="badge bg-light text-dark float-end">{{ products.length }} items</span>
@@ -137,6 +137,11 @@ export default {
 </script>
 
 <style scoped>
+
+.mb-4{
+  color: #ffffff;
+}
+
 .inventory-list {
   max-height: 500px;
   overflow-y: auto;
@@ -215,12 +220,12 @@ export default {
   border: none;
   border-bottom: 3px solid transparent;
   padding: 0.75rem 1rem;
-  color: #495057;
+  color: #d3d4d5;
 }
 
 .nav-tabs .nav-link.active {
-  border-color: #007bff;
-  color: #007bff;
+  border-color: #BBA53D;
+  color: #BBA53D;
   background-color: transparent;
 }
 
@@ -228,8 +233,9 @@ export default {
   border-color: #dee2e6;
 }
 
-.card-header.bg-primary {
+.card-header {
   border-bottom: 0;
+  background-color:#1d9756 ;
 }
 
 .card-header.bg-success {
