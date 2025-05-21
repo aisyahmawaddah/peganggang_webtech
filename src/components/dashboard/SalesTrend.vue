@@ -2,7 +2,7 @@
 <template>
   <div class="card">
     <div class="card-header">
-      <h5 class="card-title">Sales Performance</h5>
+      <h5 class="card-title">Sales Trend</h5>
     </div>
     
     <div class="card-body">
