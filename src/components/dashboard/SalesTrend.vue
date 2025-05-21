@@ -268,9 +268,9 @@ export default {
   cursor: pointer;
 }
 .toggle-btn.active {
-  background-color: #4e73df;
+  background-color:rgba(11, 58, 11, 0.888);
   color: #fff;
-  border-color: #4e73df;
+  border-color: rgba(11, 58, 11, 0.888);
 }
 .chart-container {
   position: relative;
