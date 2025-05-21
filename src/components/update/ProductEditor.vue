@@ -52,7 +52,11 @@
 <script>
 export default {
   props: {
-    products: Array
+    products: Array,
+    initialSelectedProduct: {
+      type: Object,
+      default: null
+    }
   },
   data() {
     return {
@@ -79,6 +83,12 @@ export default {
       }
     }
   },
+  mounted() {
+    // If an initial product is provided, select it
+    if (this.initialSelectedProduct) {
+      this.selectedProductId = this.initialSelectedProduct.id;
+    }
+  },
   methods: {
     submitForm() {
       this.$emit('update', { ...this.form });
@@ -86,3 +96,29 @@ export default {
   }
 };
 </script>
+
+<style scoped>
+.card-header {
+  background-color: #343a40;
+  color: white;
+}
+
+.form-group label {
+  font-weight: 500;
+}
+
+.form-control:focus {
+  border-color: #4361ee;
+  box-shadow: 0 0 0 0.2rem rgba(67, 97, 238, 0.25);
+}
+
+.btn-primary {
+  background-color: #4361ee;
+  border-color: #4361ee;
+}
+
+.btn-primary:hover {
+  background-color: #3a56d4;
+  border-color: #3a56d4;
+}
+</style>

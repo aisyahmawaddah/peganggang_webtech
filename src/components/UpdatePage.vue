@@ -24,6 +24,7 @@
         <product-editor 
           v-if="mode === 'edit'" 
           :products="products" 
+          :initial-selected-product="selectedProduct"
           @update="updateProduct"
         ></product-editor>
         
@@ -94,6 +95,31 @@ export default {
       mode: 'edit',
       selectedProduct: null
     };
+  },
+  created() {
+    // Check if there's a product in localStorage (from restock action)
+    const editProduct = localStorage.getItem('editProduct');
+    if (editProduct) {
+      try {
+        const product = JSON.parse(editProduct);
+        
+        // Find the product in the list of available products by ID
+        const foundProduct = this.products.find(p => p.id === product.id);
+        
+        if (foundProduct) {
+          // Set the selected product
+          this.selectedProduct = foundProduct;
+          
+          // Ensure we're in edit mode
+          this.mode = 'edit';
+        }
+      } catch (error) {
+        console.error('Error parsing product from localStorage:', error);
+      }
+      
+      // Clear localStorage after using it
+      localStorage.removeItem('editProduct');
+    }
   },
   methods: {
     updateProduct(product) {
