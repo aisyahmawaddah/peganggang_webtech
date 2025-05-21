@@ -7,58 +7,178 @@
         <button class="refresh-btn" @click="refreshData" title="Refresh Data">
           <i class="fas fa-sync-alt"></i>
         </button>
-        <!-- Replaced dropdown with last updated text -->
         <span class="last-updated">Last updated: {{ lastUpdatedText }}</span>
       </div>
     </div>
-    
+
     <div class="card-body d-flex flex-column">
       <div class="stat-grid flex-grow-1">
-        <div class="stat-card" @click="showProductList('all')" :class="{ active: activeCard === 'all' }">
+        <div
+          class="stat-card"
+          @click="showProductList('all')"
+          :class="{ active: activeCard === 'all' }"
+        >
           <div class="stat-info">
             <div class="stat-value">{{ totalProducts }}</div>
             <div class="stat-label">Total Products</div>
           </div>
           <div class="stat-trend" v-if="totalProductsTrend !== 0">
-            <i :class="totalProductsTrend > 0 ? 'fas fa-arrow-up trend-up' : 'fas fa-arrow-down trend-down'"></i>
-            <span :class="totalProductsTrend > 0 ? 'trend-up' : 'trend-down'">{{ Math.abs(totalProductsTrend) }}%</span>
+            <i
+              :class="
+                totalProductsTrend > 0
+                  ? 'fas fa-arrow-up trend-up'
+                  : 'fas fa-arrow-down trend-down'
+              "
+            ></i>
+            <span :class="totalProductsTrend > 0 ? 'trend-up' : 'trend-down'"
+              >{{ Math.abs(totalProductsTrend) }}%</span
+            >
           </div>
         </div>
-        
-        <div class="stat-card" @click="showProductList('low')" :class="{ active: activeCard === 'low', alert: lowStockCount > 0 }">
+
+        <div
+          class="stat-card"
+          @click="showProductList('low')"
+          :class="{ active: activeCard === 'low', alert: lowStockCount > 0 }"
+        >
           <div class="stat-info">
             <div class="stat-value orange">{{ lowStockCount }}</div>
             <div class="stat-label">Low Stock</div>
           </div>
           <div class="stat-trend" v-if="lowStockTrend !== 0">
-            <i :class="lowStockTrend < 0 ? 'fas fa-arrow-up trend-up' : 'fas fa-arrow-down trend-down'"></i>
-            <span :class="lowStockTrend < 0 ? 'trend-up' : 'trend-down'">{{ Math.abs(lowStockTrend) }}%</span>
+            <i
+              :class="
+                lowStockTrend < 0
+                  ? 'fas fa-arrow-up trend-up'
+                  : 'fas fa-arrow-down trend-down'
+              "
+            ></i>
+            <span :class="lowStockTrend < 0 ? 'trend-up' : 'trend-down'"
+              >{{ Math.abs(lowStockTrend) }}%</span
+            >
           </div>
         </div>
-        
-        <div class="stat-card" @click="showProductList('out')" :class="{ active: activeCard === 'out', alert: outOfStockCount > 0 }">
+
+        <div
+          class="stat-card"
+          @click="showProductList('out')"
+          :class="{ active: activeCard === 'out', alert: outOfStockCount > 0 }"
+        >
           <div class="stat-info">
             <div class="stat-value red">{{ outOfStockCount }}</div>
             <div class="stat-label">Out of Stock</div>
           </div>
           <div class="stat-trend" v-if="outOfStockTrend !== 0">
-            <i :class="outOfStockTrend < 0 ? 'fas fa-arrow-up trend-up' : 'fas fa-arrow-down trend-down'"></i>
-            <span :class="outOfStockTrend < 0 ? 'trend-up' : 'trend-down'">{{ Math.abs(outOfStockTrend) }}%</span>
+            <i
+              :class="
+                outOfStockTrend < 0
+                  ? 'fas fa-arrow-up trend-up'
+                  : 'fas fa-arrow-down trend-down'
+              "
+            ></i>
+            <span :class="outOfStockTrend < 0 ? 'trend-up' : 'trend-down'"
+              >{{ Math.abs(outOfStockTrend) }}%</span
+            >
           </div>
         </div>
-        
-        <div class="stat-card" @click="showProductList('sales')" :class="{ active: activeCard === 'sales' }">
+
+        <div
+          class="stat-card"
+          @click="showProductList('sales')"
+          :class="{ active: activeCard === 'sales' }"
+        >
           <div class="stat-info">
-            <div class="stat-value green">RM{{ totalSales.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}</div>
+            <div class="stat-value green">
+              RM{{
+                totalSales.toLocaleString("en-US", {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })
+              }}
+            </div>
             <div class="stat-label">Total Sales</div>
           </div>
           <div class="stat-trend" v-if="salesTrend !== 0">
-            <i :class="salesTrend > 0 ? 'fas fa-arrow-up trend-up' : 'fas fa-arrow-down trend-down'"></i>
-            <span :class="salesTrend > 0 ? 'trend-up' : 'trend-down'">{{ Math.abs(salesTrend) }}%</span>
+            <i
+              :class="
+                salesTrend > 0
+                  ? 'fas fa-arrow-up trend-up'
+                  : 'fas fa-arrow-down trend-down'
+              "
+            ></i>
+            <span :class="salesTrend > 0 ? 'trend-up' : 'trend-down'"
+              >{{ Math.abs(salesTrend) }}%</span
+            >
+          </div>
+        </div>
+
+        <!-- New card for Categories -->
+        <div
+          class="stat-card"
+          @click="showProductList('categories')"
+          :class="{ active: activeCard === 'categories' }"
+        >
+          <div class="stat-info">
+            <div class="stat-value blue">{{ categories.length }}</div>
+            <div class="stat-label">Categories</div>
+          </div>
+        </div>
+
+        <!-- New card for Inventory Value -->
+        <div class="stat-card">
+          <div class="stat-info">
+            <div class="stat-value purple">
+              RM{{
+                inventoryValue.toLocaleString("en-US", {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })
+              }}
+            </div>
+            <div class="stat-label">Inventory Value</div>
+          </div>
+          <div class="inventory-detail">
+            <div class="progress-bar">
+              <div
+                class="progress-fill"
+                :style="{ width: inventoryHealthPercent + '%' }"
+              ></div>
+            </div>
+            <div class="inventory-health">
+              {{ inventoryHealthPercent }}% Health
+            </div>
           </div>
         </div>
       </div>
-      
+
+      <!-- Recent Activity Section -->
+      <div class="recent-activity" v-if="!showPanel">
+        <div class="section-title">Recent Activity</div>
+        <div class="activity-list">
+          <div
+            v-for="(update, index) in recentUpdates"
+            :key="index"
+            class="activity-item"
+          >
+            <div
+              class="activity-icon"
+              :class="getActivityIconClass(update.type)"
+            >
+              <i :class="getActivityIcon(update.type)"></i>
+            </div>
+            <div class="activity-content">
+              <div class="activity-text">{{ getActivityText(update) }}</div>
+              <div class="activity-time">
+                {{ formatTimeAgo(update.timestamp) }}
+              </div>
+            </div>
+          </div>
+          <div v-if="recentUpdates.length === 0" class="no-activity">
+            No recent activity
+          </div>
+        </div>
+      </div>
+
       <!-- Product list panel that appears when a card is clicked -->
       <div class="product-list-panel" v-if="showPanel">
         <div class="panel-header">
@@ -79,25 +199,28 @@
           <table v-else class="product-table">
             <thead>
               <tr>
-                <th>Product</th>
                 <th>Category</th>
-                <th>Price</th>
-                <th>Stock</th>
+                <th>Product</th>
                 <th v-if="activeCard === 'sales'">Sold</th>
                 <th v-if="activeCard === 'sales'">Sales</th>
-                <th v-if="activeCard === 'low' || activeCard === 'out'">Action</th>
+                <th v-if="activeCard === 'low' || activeCard === 'out'">
+                  Action
+                </th>
               </tr>
             </thead>
             <tbody>
               <tr v-for="product in filteredProducts" :key="product.id">
                 <td>{{ product.name }}</td>
-                <td>{{ product.category }}</td>
-                <td>RM{{ product.price.toFixed(2) }}</td>
                 <td>{{ product.stock }}</td>
                 <td v-if="activeCard === 'sales'">{{ product.sold }}</td>
-                <td v-if="activeCard === 'sales'">RM{{ product.sales.toFixed(2) }}</td>
+                <td v-if="activeCard === 'sales'">
+                  RM{{ product.sales.toFixed(2) }}
+                </td>
                 <td v-if="activeCard === 'low' || activeCard === 'out'">
-                  <button class="action-btn" @click="navigateToUpdatePage(product)">
+                  <button
+                    class="action-btn"
+                    @click="navigateToUpdatePage(product)"
+                  >
                     Restock
                   </button>
                 </td>
@@ -117,7 +240,7 @@
 
 <script>
 export default {
-  name: 'InventoryOverview',
+  name: "InventoryOverview",
   data() {
     return {
       products: [],
@@ -128,57 +251,97 @@ export default {
       lowStockTrend: -5,
       outOfStockTrend: -2,
       salesTrend: 8,
-      lastUpdated: new Date()
+      lastUpdated: new Date(),
+      inventoryUpdates: [],
     };
   },
   props: {
     // Add props to allow parent component to handle page navigation
     onNavigateToUpdate: {
       type: Function,
-      default: null
-    }
+      default: null,
+    },
   },
   computed: {
     totalProducts() {
       return this.products.length;
     },
     lowStockCount() {
-      return this.products.filter(product => 
-        product.stock > 0 && product.stock <= product.reorderLevel
+      return this.products.filter(
+        (product) => product.stock > 0 && product.stock <= product.reorderLevel
       ).length;
     },
     outOfStockCount() {
-      return this.products.filter(product => product.stock <= 0).length;
+      return this.products.filter((product) => product.stock <= 0).length;
     },
     totalSales() {
       return this.products.reduce((total, product) => total + product.sales, 0);
     },
+    categories() {
+      return [...new Set(this.products.map((product) => product.category))];
+    },
+    inventoryValue() {
+      return this.products.reduce(
+        (total, product) => total + product.price * product.stock,
+        0
+      );
+    },
+    inventoryHealthPercent() {
+      if (this.products.length === 0) return 100;
+
+      // Calculate based on how many products are at healthy stock levels
+      const healthyProducts = this.products.filter(
+        (product) => product.stock > product.reorderLevel * 1.5
+      ).length;
+
+      return Math.round((healthyProducts / this.products.length) * 100);
+    },
     filteredProducts() {
-      if (this.activeCard === 'all') {
+      if (this.activeCard === "all") {
         return [...this.products];
-      } else if (this.activeCard === 'low') {
-        return this.products.filter(product => 
-          product.stock > 0 && product.stock <= product.reorderLevel
+      } else if (this.activeCard === "low") {
+        return this.products.filter(
+          (product) =>
+            product.stock > 0 && product.stock <= product.reorderLevel
         );
-      } else if (this.activeCard === 'out') {
-        return this.products.filter(product => product.stock <= 0);
-      } else if (this.activeCard === 'sales') {
+      } else if (this.activeCard === "out") {
+        return this.products.filter((product) => product.stock <= 0);
+      } else if (this.activeCard === "sales") {
         // Return all products sorted by sales (highest to lowest)
         return [...this.products].sort((a, b) => b.sales - a.sales);
+      } else if (this.activeCard === "categories") {
+        // Group by category and return a transformed array for the table
+        const result = [];
+        this.categories.forEach((category) => {
+          result.push({
+            id: `category-${category}`,
+            name: category,
+            category: "Category",
+            price: "-",
+            stock: this.getProductCountByCategory(category),
+            isCategory: true,
+          });
+        });
+        return result;
       }
       return [];
     },
     panelTitle() {
-      if (this.activeCard === 'all') return 'All Products';
-      if (this.activeCard === 'low') return 'Low Stock Products';
-      if (this.activeCard === 'out') return 'Out of Stock Products';
-      if (this.activeCard === 'sales') return 'Top Selling Products';
-      return '';
+      if (this.activeCard === "all") return "All Products";
+      if (this.activeCard === "low") return "Low Stock Products";
+      if (this.activeCard === "out") return "Out of Stock Products";
+      if (this.activeCard === "sales") return "Top Selling Products";
+      if (this.activeCard === "categories") return "Categories";
+      return "";
     },
     lastUpdatedText() {
       // Format the last updated time to a nice string
       return this.formatTime(this.lastUpdated);
-    }
+    },
+    recentUpdates() {
+      // Get the 5 most recent inventory updates
+      return this.inventoryUpdates.slice(0, 5);
+    },
   },
   created() {
     this.fetchProducts();
@@ -186,12 +349,13 @@ export default {
   methods: {
     fetchProducts() {
       this.isLoading = true;
-      
+
       // Simulate loading delay
       setTimeout(() => {
         // In a real application, this would be an API call with time range filters
-        const mockData = require('@/data/mockData').default;
+        const mockData = require("@/data/mockData").default;
         this.products = mockData.products;
+        this.inventoryUpdates = mockData.inventoryUpdates || [];
         this.lastUpdated = new Date();
         this.isLoading = false;
       }, 600);
@@ -219,22 +383,22 @@ export default {
     },
     navigateToUpdatePage(product) {
       // Store the product data in localStorage
-      localStorage.setItem('editProduct', JSON.stringify(product));
-      
+      localStorage.setItem("editProduct", JSON.stringify(product));
+
       // If a navigation function was provided by the parent, use it
       if (this.onNavigateToUpdate) {
         this.onNavigateToUpdate(product);
         return;
       }
-      
+
       // Find App.vue in the component hierarchy
       let appComponent = this.$root;
-      
+
       // Set the current page to update
-      if (appComponent && typeof appComponent.currentPage !== 'undefined') {
-        appComponent.currentPage = 'update';
+      if (appComponent && typeof appComponent.currentPage !== "undefined") {
+        appComponent.currentPage = "update";
       } else {
-        console.error('Could not find App component with currentPage property');
+        console.error("Could not find App component with currentPage property");
       }
     },
     formatTime(date) {
@@ -244,25 +408,106 @@ export default {
       const diffSec = Math.round(diffMs / 1000);
       const diffMin = Math.round(diffSec / 60);
       const diffHour = Math.round(diffMin / 60);
-      
+
       if (diffSec < 60) {
-        return 'Just now';
+        return "Just now";
       } else if (diffMin < 60) {
-        return `${diffMin} minute${diffMin !== 1 ? 's' : ''} ago`;
+        return `${diffMin} minute${diffMin !== 1 ? "s" : ""} ago`;
       } else if (diffHour < 24) {
-        return `${diffHour} hour${diffHour !== 1 ? 's' : ''} ago`;
+        return `${diffHour} hour${diffHour !== 1 ? "s" : ""} ago`;
       } else {
         // Format to standard date
         return date.toLocaleString();
       }
-    }
-  }
+    },
+    formatTimeAgo(timestamp) {
+      if (!timestamp) return "";
+
+      const date = new Date(timestamp);
+      return this.formatTime(date);
+    },
+    getProductCountByCategory(category) {
+      return this.products.filter((product) => product.category === category)
+        .length;
+    },
+    getActivityIconClass(type) {
+      switch (type) {
+        case "restock":
+          return "icon-green";
+        case "sale":
+          return "icon-blue";
+        case "price_change":
+          return "icon-purple";
+        case "delete":
+          return "icon-red";
+        case "add":
+          return "icon-green";
+        default:
+          return "icon-gray";
+      }
+    },
+    getActivityIcon(type) {
+      switch (type) {
+        case "restock":
+          return "fas fa-plus";
+        case "sale":
+          return "fas fa-shopping-cart";
+        case "price_change":
+          return "fas fa-tag";
+        case "delete":
+          return "fas fa-trash";
+        case "add":
+          return "fas fa-plus-circle";
+        case "category_change":
+          return "fas fa-folder";
+        case "reorder_change":
+          return "fas fa-bell";
+        case "name_change":
+          return "fas fa-edit";
+        default:
+          return "fas fa-cog";
+      }
+    },
+    getActivityText(update) {
+      const productName =
+        this.getProductName(update.productId) ||
+        update.productName ||
+        "Product";
+
+      switch (update.type) {
+        case "restock":
+          return `Restocked ${productName}: ${update.oldQuantity} → ${update.newQuantity}`;
+        case "sale":
+          return `Sold ${
+            update.oldQuantity - update.newQuantity
+          } units of ${productName}`;
+        case "price_change":
+          return `Changed price of ${productName}: RM${update.oldPrice} → RM${update.newPrice}`;
+        case "delete":
+          return `Deleted product: ${productName}`;
+        case "add":
+          return `Added new product: ${productName}`;
+        case "category_change":
+          return `Changed category of ${productName}: ${update.oldCategory} → ${update.newCategory}`;
+        case "reorder_change":
+          return `Updated reorder level of ${productName}: ${update.oldReorderLevel} → ${update.newReorderLevel}`;
+        case "name_change":
+          return `Renamed product: ${update.oldName} → ${update.newName}`;
+        default:
+          return `Updated ${productName}`;
+      }
+    },
+    getProductName(productId) {
+      const product = this.products.find((p) => p.id === productId);
+      return product ? product.name : null;
+    },
+  },
 };
 </script>
 
 <style scoped>
 .inventory-card {
-  height: 572px; /* Match the height of Sales Performance */
+  height: 500px; /* Match the height of Sales Performance */
   display: flex;
   flex-direction: column;
   margin-bottom: 20px;
@@ -347,10 +592,9 @@ export default {
 .stat-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  grid-template-rows: 1fr 1fr;
+  grid-template-rows: repeat(3, minmax(100px, auto));
   gap: 15px;
-  height: 100%;
-  align-items: stretch;
+  margin-bottom: 15px;
 }
 
 .stat-card {
@@ -358,14 +602,12 @@ export default {
   border-radius: 8px;
   padding: 15px;
   display: flex;
-  align-items: center;
-  justify-content: center;
+  flex-direction: column;
   position: relative;
   cursor: pointer;
   transition: all 0.3s;
   border: 2px solid transparent;
-  text-align: center;
-  height: auto;
+  overflow: hidden;
 }
 
 .stat-card:hover {
@@ -393,25 +635,13 @@ export default {
   }
 }
 
-.stat-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 8px;
-  background-color: #eaeaea;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 12px;
-  font-size: 18px;
-  color: #6c757d;
-}
-
 .stat-info {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   width: 100%;
+  text-align: center;
 }
 
 .stat-value {
@@ -431,6 +661,14 @@ export default {
 
 .green {
   color: #137333;
+}
+
+.blue {
+  color: #4361ee;
+}
+
+.purple {
+  color: #8b5cf6;
 }
 
 .stat-label {
@@ -457,6 +695,147 @@ export default {
 
 .stat-trend i {
   margin-right: 3px;
+}
+
+/* Category list inside stat card */
+.category-list {
+  margin-top: 15px;
+  width: 100%;
+  max-height: 100px;
+  overflow-y: auto;
+}
+
+.category-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 0;
+  font-size: 13px;
+  border-bottom: 1px solid #eee;
+}
+
+.category-item:last-child {
+  border-bottom: none;
+}
+
+.category-count {
+  font-weight: 500;
+  color: #333;
+}
+
+/* Inventory Health */
+.inventory-detail {
+  margin-top: 15px;
+  width: 100%;
+}
+
+.progress-bar {
+  height: 8px;
+  background-color: #e9ecef;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 5px;
+}
+
+.progress-fill {
+  height: 100%;
+  background-color: #4cc9f0;
+  border-radius: 4px;
+}
+
+.inventory-health {
+  font-size: 13px;
+  color: #6c757d;
+  text-align: center;
+}
+
+/* Recent Activity */
+.recent-activity {
+  margin-top: auto;
+  border-top: 1px solid #eee;
+  padding-top: 10px;
+}
+
+.section-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.activity-list {
+  max-height: 120px;
+  overflow-y: auto;
+}
+
+.activity-item {
+  display: flex;
+  align-items: flex-start;
+  padding: 8px 0;
+  border-bottom: 1px solid #f5f5f5;
+}
+
+.activity-item:last-child {
+  border-bottom: none;
+}
+
+.activity-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 10px;
+  flex-shrink: 0;
+}
+
+.icon-green {
+  background-color: rgba(19, 115, 51, 0.1);
+  color: #137333;
+}
+
+.icon-blue {
+  background-color: rgba(67, 97, 238, 0.1);
+  color: #4361ee;
+}
+
+.icon-red {
+  background-color: rgba(247, 37, 133, 0.1);
+  color: #f72585;
+}
+
+.icon-purple {
+  background-color: rgba(139, 92, 246, 0.1);
+  color: #8b5cf6;
+}
+
+.icon-gray {
+  background-color: rgba(108, 117, 125, 0.1);
+  color: #6c757d;
+}
+
+.activity-content {
+  flex: 1;
+}
+
+.activity-text {
+  font-size: 13px;
+  color: #333;
+  margin-bottom: 2px;
+  line-height: 1.4;
+}
+
+.activity-time {
+  font-size: 12px;
+  color: #6c757d;
+}
+
+.no-activity {
+  text-align: center;
+  padding: 10px;
+  color: #6c757d;
+  font-style: italic;
+  font-size: 13px;
 }
 
 /* Product list panel */
@@ -610,7 +989,11 @@ export default {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 </style>
