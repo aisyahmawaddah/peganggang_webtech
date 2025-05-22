@@ -27,7 +27,7 @@
         
         <div class="row">
           <div class="col-md-6 mb-3">
-            <label for="productPrice">Price ($)</label>
+            <label for="productPrice">Price (RM)</label>
             <input type="number" step="0.01" class="form-control" id="productPrice" v-model="form.price" required>
           </div>
           <div class="col-md-6 mb-3">

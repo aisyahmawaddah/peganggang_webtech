@@ -54,7 +54,7 @@
                   <h6 class="mb-1">{{ product.name }}</h6>
                   <div class="item-meta">
                     <span class="category">{{ product.category }}</span>
-                    <span class="price">${{ product.price.toFixed(2) }}</span>
+                    <span class="price">RM{{ product.price.toFixed(2) }}</span>
                   </div>
                 </div>
                 <div class="item-stock text-center">
