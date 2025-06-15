@@ -152,7 +152,7 @@
       </div>
 
       <!-- Recent Activity Section -->
-      <div class="recent-activity" v-if="!showPanel">
+      <!-- <div class="recent-activity" v-if="!showPanel">
         <div class="section-title">Recent Activity</div>
         <div class="activity-list">
           <div
@@ -177,7 +177,7 @@
             No recent activity
           </div>
         </div>
-      </div>
+      </div> -->
 
       <!-- Product list panel that appears when a card is clicked -->
       <div class="product-list-panel" v-if="showPanel">
@@ -244,19 +244,18 @@ export default {
   data() {
     return {
       products: [],
+      inventoryUpdates: [],
       activeCard: null,
       showPanel: false,
       isLoading: false,
-      totalProductsTrend: 3,
-      lowStockTrend: -5,
-      outOfStockTrend: -2,
-      salesTrend: 8,
+      totalProductsTrend: 0,
+      lowStockTrend: 0,
+      outOfStockTrend: 0,
+      salesTrend: 0,
       lastUpdated: new Date(),
-      inventoryUpdates: [],
     };
   },
   props: {
-    // Add props to allow parent component to handle page navigation
     onNavigateToUpdate: {
       type: Function,
       default: null,
@@ -268,17 +267,14 @@ export default {
     },
     lowStockCount() {
       return this.products.filter(
-        (product) => product.stock > 0 && product.stock <= product.reorderLevel
+        (product) => product.stock > 0 && product.stock <= product.reorder_level
       ).length;
     },
     outOfStockCount() {
       return this.products.filter((product) => product.stock <= 0).length;
     },
     totalSales() {
-      return this.products.reduce((total, product) => total + product.sales, 0);
-    },
-    categories() {
-      return [...new Set(this.products.map((product) => product.category))];
+      return this.products.reduce((total, product) => total + (product.sales || 0), 0);
     },
     inventoryValue() {
       return this.products.reduce(
@@ -286,60 +282,55 @@ export default {
         0
       );
     },
+    categories() {
+      return [...new Set(this.products.map((product) => product.category))];
+    },
     inventoryHealthPercent() {
       if (this.products.length === 0) return 100;
-
-      // Calculate based on how many products are at healthy stock levels
-      const healthyProducts = this.products.filter(
-        (product) => product.stock > product.reorderLevel * 1.5
+      const healthy = this.products.filter(
+        (p) => p.stock > p.reorder_level * 1.5
       ).length;
-
-      return Math.round((healthyProducts / this.products.length) * 100);
+      return Math.round((healthy / this.products.length) * 100);
     },
     filteredProducts() {
-      if (this.activeCard === "all") {
-        return [...this.products];
-      } else if (this.activeCard === "low") {
+      if (this.activeCard === "all") return [...this.products];
+      if (this.activeCard === "low") {
         return this.products.filter(
-          (product) =>
-            product.stock > 0 && product.stock <= product.reorderLevel
+          (p) => p.stock > 0 && p.stock <= p.reorder_level
         );
-      } else if (this.activeCard === "out") {
-        return this.products.filter((product) => product.stock <= 0);
-      } else if (this.activeCard === "sales") {
-        // Return all products sorted by sales (highest to lowest)
+      }
+      if (this.activeCard === "out") {
+        return this.products.filter((p) => p.stock <= 0);
+      }
+      if (this.activeCard === "sales") {
         return [...this.products].sort((a, b) => b.sales - a.sales);
-      } else if (this.activeCard === "categories") {
-        // Group by category and return a transformed array for the table
-        const result = [];
-        this.categories.forEach((category) => {
-          result.push({
-            id: `category-${category}`,
-            name: category,
-            category: "Category",
-            price: "-",
-            stock: this.getProductCountByCategory(category),
-            isCategory: true,
-          });
-        });
-        return result;
+      }
+      if (this.activeCard === "categories") {
+        return this.categories.map((category) => ({
+          id: `category-${category}`,
+          name: category,
+          category: "Category",
+          price: "-",
+          stock: this.getProductCountByCategory(category),
+          isCategory: true,
+        }));
       }
       return [];
     },
     panelTitle() {
-      if (this.activeCard === "all") return "All Products";
-      if (this.activeCard === "low") return "Low Stock Products";
-      if (this.activeCard === "out") return "Out of Stock Products";
-      if (this.activeCard === "sales") return "Top Selling Products";
-      if (this.activeCard === "categories") return "Categories";
-      return "";
+      const titles = {
+        all: "All Products",
+        low: "Low Stock Products",
+        out: "Out of Stock Products",
+        sales: "Top Selling Products",
+        categories: "Categories",
+      };
+      return titles[this.activeCard] || "";
     },
     lastUpdatedText() {
-      // Format the last updated time to a nice string
       return this.formatTime(this.lastUpdated);
     },
     recentUpdates() {
-      // Get the 5 most recent inventory updates
       return this.inventoryUpdates.slice(0, 5);
     },
   },
@@ -347,31 +338,33 @@ export default {
     this.fetchProducts();
   },
   methods: {
-    fetchProducts() {
+    async fetchProducts() {
       this.isLoading = true;
+      try {
+        const response = await fetch("http://localhost/backend/api/products.php");
+        const data = await response.json();
+        if (data.success && Array.isArray(data.data)) {
+          this.products = data.data;
+        } else {
+          console.error("Failed to fetch products:", data.message);
+        }
 
-      // Simulate loading delay
-      setTimeout(() => {
-        // In a real application, this would be an API call with time range filters
-        const mockData = require("@/data/mockData").default;
-        this.products = mockData.products;
-        this.inventoryUpdates = mockData.inventoryUpdates || [];
+        // Optional: fetch updates
+        const updateRes = await fetch("http://localhost/backend/api/updates.php");
+        const updateData = await updateRes.json();
+        if (updateData.success) {
+          this.inventoryUpdates = updateData.data;
+        }
+
         this.lastUpdated = new Date();
+      } catch (err) {
+        console.error("Error fetching product data:", err);
+      } finally {
         this.isLoading = false;
-      }, 600);
+      }
     },
     refreshData() {
-      this.isLoading = true;
-      // Simulate data refresh
-      setTimeout(() => {
-        this.fetchProducts();
-        // Update trends randomly for demo purposes
-        this.totalProductsTrend = Math.floor(Math.random() * 10) - 3;
-        this.lowStockTrend = Math.floor(Math.random() * 10) - 5;
-        this.outOfStockTrend = Math.floor(Math.random() * 10) - 5;
-        this.salesTrend = Math.floor(Math.random() * 15);
-        this.isLoading = false;
-      }, 800);
+      this.fetchProducts();
     },
     showProductList(type) {
       this.activeCard = type;
@@ -382,19 +375,12 @@ export default {
       this.activeCard = null;
     },
     navigateToUpdatePage(product) {
-      // Store the product data in localStorage
       localStorage.setItem("editProduct", JSON.stringify(product));
-
-      // If a navigation function was provided by the parent, use it
       if (this.onNavigateToUpdate) {
         this.onNavigateToUpdate(product);
         return;
       }
-
-      // Find App.vue in the component hierarchy
       let appComponent = this.$root;
-
-      // Set the current page to update
       if (appComponent && typeof appComponent.currentPage !== "undefined") {
         appComponent.currentPage = "update";
       } else {
@@ -402,85 +388,53 @@ export default {
       }
     },
     formatTime(date) {
-      // Format date to a more readable format
       const now = new Date();
-      const diffMs = now - date;
-      const diffSec = Math.round(diffMs / 1000);
-      const diffMin = Math.round(diffSec / 60);
-      const diffHour = Math.round(diffMin / 60);
-
-      if (diffSec < 60) {
-        return "Just now";
-      } else if (diffMin < 60) {
-        return `${diffMin} minute${diffMin !== 1 ? "s" : ""} ago`;
-      } else if (diffHour < 24) {
-        return `${diffHour} hour${diffHour !== 1 ? "s" : ""} ago`;
-      } else {
-        // Format to standard date
-        return date.toLocaleString();
-      }
+      const diff = now - new Date(date);
+      const min = Math.round(diff / 60000);
+      if (min < 1) return "Just now";
+      if (min < 60) return `${min} minute${min !== 1 ? "s" : ""} ago`;
+      const hr = Math.round(min / 60);
+      if (hr < 24) return `${hr} hour${hr !== 1 ? "s" : ""} ago`;
+      return new Date(date).toLocaleString();
     },
     formatTimeAgo(timestamp) {
       if (!timestamp) return "";
-
-      const date = new Date(timestamp);
-      return this.formatTime(date);
+      return this.formatTime(new Date(timestamp));
     },
     getProductCountByCategory(category) {
-      return this.products.filter((product) => product.category === category)
-        .length;
+      return this.products.filter((p) => p.category === category).length;
     },
     getActivityIconClass(type) {
-      switch (type) {
-        case "restock":
-          return "icon-green";
-        case "sale":
-          return "icon-blue";
-        case "price_change":
-          return "icon-purple";
-        case "delete":
-          return "icon-red";
-        case "add":
-          return "icon-green";
-        default:
-          return "icon-gray";
-      }
+      const colorMap = {
+        restock: "icon-green",
+        sale: "icon-blue",
+        price_change: "icon-purple",
+        delete: "icon-red",
+        add: "icon-green",
+      };
+      return colorMap[type] || "icon-gray";
     },
     getActivityIcon(type) {
-      switch (type) {
-        case "restock":
-          return "fas fa-plus";
-        case "sale":
-          return "fas fa-shopping-cart";
-        case "price_change":
-          return "fas fa-tag";
-        case "delete":
-          return "fas fa-trash";
-        case "add":
-          return "fas fa-plus-circle";
-        case "category_change":
-          return "fas fa-folder";
-        case "reorder_change":
-          return "fas fa-bell";
-        case "name_change":
-          return "fas fa-edit";
-        default:
-          return "fas fa-cog";
-      }
+      const iconMap = {
+        restock: "fas fa-plus",
+        sale: "fas fa-shopping-cart",
+        price_change: "fas fa-tag",
+        delete: "fas fa-trash",
+        add: "fas fa-plus-circle",
+        category_change: "fas fa-folder",
+        reorder_change: "fas fa-bell",
+        name_change: "fas fa-edit",
+      };
+      return iconMap[type] || "fas fa-cog";
     },
     getActivityText(update) {
       const productName =
-        this.getProductName(update.productId) ||
-        update.productName ||
-        "Product";
-
+        this.getProductName(update.productId) || update.productName || "Product";
       switch (update.type) {
         case "restock":
           return `Restocked ${productName}: ${update.oldQuantity} → ${update.newQuantity}`;
         case "sale":
-          return `Sold ${
-            update.oldQuantity - update.newQuantity
-          } units of ${productName}`;
+          return `Sold ${update.oldQuantity - update.newQuantity} units of ${productName}`;
         case "price_change":
           return `Changed price of ${productName}: RM${update.oldPrice} → RM${update.newPrice}`;
         case "delete":
@@ -498,12 +452,13 @@ export default {
       }
     },
     getProductName(productId) {
-      const product = this.products.find((p) => p.id === productId);
-      return product ? product.name : null;
+      const p = this.products.find((prod) => prod.id === productId);
+      return p ? p.name : null;
     },
   },
 };
 </script>
+
 
 <style scoped>
 .inventory-card {

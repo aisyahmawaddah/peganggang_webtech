@@ -157,6 +157,7 @@ async updateProduct(updatedProduct) {
       if (result.success) {
         alert('Product deleted successfully!');
         await this.loadData(); 
+
       } else {
         alert('Failed to delete: ' + result.message);
       }
