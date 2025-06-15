@@ -11,11 +11,7 @@ Header always set X-Content-Type-Options nosniff
 Header always set X-Frame-Options DENY
 Header always set X-XSS-Protection "1; mode=block"
 
-# CORS Headers for API
-Header always set Access-Control-Allow-Origin "http://localhost:8080"
-Header always set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
-Header always set Access-Control-Allow-Headers "Content-Type, Authorization, X-Requested-With"
-Header always set Access-Control-Max-Age "3600"
+# NO CORS HEADERS HERE - Let PHP handle CORS
 
 # Handle preflight OPTIONS requests
 RewriteCond %{REQUEST_METHOD} OPTIONS
@@ -76,7 +72,3 @@ AddType text/plain .log
     ExpiresByType text/css "access plus 1 month"
     ExpiresByType application/javascript "access plus 1 month"
 </IfModule>
-
-# Error pages (optional)
-ErrorDocument 404 /flexstock-backend/api/index.php
-ErrorDocument 500 /flexstock-backend/api/index.php
