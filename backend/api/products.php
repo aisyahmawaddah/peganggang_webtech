@@ -245,54 +245,27 @@ try {
             }
             break;
             
-        case 'DELETE':
-            if (!$product_id) {
-                handleError('Product ID is required for deletion', HTTP_BAD_REQUEST);
-            }
-            
-            // Get product details before deletion
-            $product->id = $product_id;
-            if ($product->readOne()) {
-                $product_name = $product->name;
-                $product_stock = $product->stock;
-                $product_price = $product->price;
-                $product_category = $product->category;
-                $product_reorder_level = $product->reorder_level;
-                
-                if ($product->delete()) {
-                    // Log the deletion
-                    $update->create([
-                        'product_id' => null,
-                        'old_quantity' => $product_stock,
-                        'new_quantity' => 0,
-                        'type' => 'delete',
-                        'user' => 'admin',
-                        'product_name' => $product_name,
-                        'old_name' => $product_name,
-                        'new_name' => null,
-                        'old_price' => $product_price,
-                        'new_price' => null,
-                        'old_category' => $product_category,
-                        'new_category' => null,
-                        'old_reorder_level' => $product_reorder_level,
-                        'new_reorder_level' => null
-                    ]);
-                    
-                    sendJsonResponse([
-                        'success' => true,
-                        'message' => 'Product deleted successfully'
-                    ], HTTP_OK);
-                } else {
-                    handleError('Failed to delete product', HTTP_INTERNAL_ERROR);
-                }
-            } else {
-                handleError('Product not found', HTTP_NOT_FOUND);
-            }
-            break;
-            
-        default:
-            handleError('Method not allowed', HTTP_METHOD_NOT_ALLOWED);
-            break;
+      case 'DELETE':
+    if (!$product_id) {
+        handleError('Product ID is required for delete', HTTP_BAD_REQUEST);
+    }
+
+    $product->id = $product_id;
+
+    if (!$product->readOne()) {
+        handleError('Product not found', HTTP_NOT_FOUND);
+    }
+
+    if ($product->delete()) {
+        sendJsonResponse([
+            'success' => true,
+            'message' => 'Product deleted successfully'
+        ], HTTP_OK);
+    } else {
+        handleError('Failed to delete product', HTTP_INTERNAL_ERROR);
+    }
+    break;
+
     }
     
 } catch (Exception $e) {

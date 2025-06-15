@@ -48,5 +48,24 @@ class Update {
 
         return $stmt->execute();
     }
-}
+
+    // ✅ New method to update product info
+    public function updateProduct($data) {
+        $query = "UPDATE products 
+                  SET name = :name, category = :category, price = :price, 
+                      stock = :stock, reorder_level = :reorder_level 
+                  WHERE id = :id";
+
+        $stmt = $this->conn->prepare($query);
+
+        $stmt->bindParam(":id", $data['id']);
+        $stmt->bindParam(":name", $data['name']);
+        $stmt->bindParam(":category", $data['category']);
+        $stmt->bindParam(":price", $data['price']);
+        $stmt->bindParam(":stock", $data['stock']);
+        $stmt->bindParam(":reorder_level", $data['reorder_level']);
+
+        return $stmt->execute();
+    }
+} // <--- ✅ This closing bracket ends the class!
 ?>

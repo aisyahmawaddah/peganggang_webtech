@@ -37,8 +37,14 @@
       <dashboard-page v-if="currentPage === 'dashboard'" :products="products" :sales="salesHistory"
         :updates="inventoryUpdates" />
 
-      <update-page v-if="currentPage === 'update'" :products="products" @update-product="updateProduct"
-        @delete-product="deleteProduct" />
+        <update-page 
+      v-if="currentPage === 'update'" 
+      :products="products" 
+      @update-product="updateProduct"
+      @delete-product="deleteProduct" 
+    />
+
+        
     </main>
   </div>
 </template>
@@ -46,7 +52,6 @@
 <script>
 import DashboardPage from './components/DashboardPage.vue';
 import UpdatePage from './components/UpdatePage.vue';
-import mockData from './data/mockData.js';
 
 export default {
   components: {
@@ -56,138 +61,111 @@ export default {
   data() {
     return {
       currentPage: 'dashboard',
-      products: mockData.products,
-      salesHistory: mockData.salesHistory,
-      inventoryUpdates: mockData.inventoryUpdates
+      products: [],
+      salesHistory: [],
+      inventoryUpdates: []
     };
   },
+
+   mounted() {
+    this.loadData();
+  },
   methods: {
-    updateProduct(updatedProduct) {
-      // Check if this is a new product (no existing ID in the array)
-      const index = this.products.findIndex(p => p.id === updatedProduct.id);
 
-      if (index === -1) {
-        // This is a new product, add it to the array
-        this.products.push(updatedProduct);
+    async loadData() {
+      try {
+        const productsRes = await fetch('http://localhost/backend/api/products.php');
+        const productData = await productsRes.json();
+        this.products = productData.data;
 
-        // Add a new inventory update record
-        const update = {
-          timestamp: new Date().toISOString(),
-          productId: updatedProduct.id,
-          oldQuantity: 0,
-          newQuantity: updatedProduct.stock,
-          type: 'add',
-          user: 'admin',
-          productName: updatedProduct.name
-        };
+        const updatesRes = await fetch('http://localhost/backend/api/updates.php');
+        const updateData = await updatesRes.json();
+        this.inventoryUpdates = updateData.data;
 
-        this.inventoryUpdates.unshift(update);
-      } else {
-        // This is an existing product - get the old product
-        const oldProduct = this.products[index];
-
-        // Compare each field to detect what changed
-        const changes = {};
-
-        // Check for name changes
-        if (oldProduct.name !== updatedProduct.name) {
-          changes.oldName = oldProduct.name;
-          changes.newName = updatedProduct.name;
-          changes.type = 'name_change';
-        }
-
-        // Check for category changes
-        if (oldProduct.category !== updatedProduct.category) {
-          changes.oldCategory = oldProduct.category;
-          changes.newCategory = updatedProduct.category;
-          changes.type = changes.type || 'category_change';
-        }
-
-        // Check for price changes
-        if (oldProduct.price !== updatedProduct.price) {
-          changes.oldPrice = oldProduct.price;
-          changes.newPrice = updatedProduct.price;
-          changes.type = changes.type || 'price_change';
-        }
-
-        // Check for reorder level changes
-        if (oldProduct.reorderLevel !== updatedProduct.reorderLevel) {
-          changes.oldReorderLevel = oldProduct.reorderLevel;
-          changes.newReorderLevel = updatedProduct.reorderLevel;
-          changes.type = changes.type || 'reorder_change';
-        }
-
-        // Check for stock changes
-        if (oldProduct.stock !== updatedProduct.stock) {
-          changes.oldQuantity = oldProduct.stock;
-          changes.newQuantity = updatedProduct.stock;
-          changes.type = changes.type || (updatedProduct.stock > oldProduct.stock ? 'restock' : 'sale');
-        } else {
-          // If stock didn't change, but we're tracking other changes, still record the quantities
-          changes.oldQuantity = oldProduct.stock;
-          changes.newQuantity = updatedProduct.stock;
-        }
-
-        // If no specific change was detected, mark as generic update
-        if (!changes.type) {
-          changes.type = 'update';
-        }
-
-        // Create the update record with all detected changes
-        const update = {
-          timestamp: new Date().toISOString(),
-          productId: updatedProduct.id,
-          oldQuantity: changes.oldQuantity || oldProduct.stock,
-          newQuantity: changes.newQuantity || updatedProduct.stock,
-          type: changes.type,
-          user: 'admin',
-
-          // Include all specific change fields
-          ...(changes.oldName && { oldName: changes.oldName }),
-          ...(changes.newName && { newName: changes.newName }),
-          ...(changes.oldCategory && { oldCategory: changes.oldCategory }),
-          ...(changes.newCategory && { newCategory: changes.newCategory }),
-          ...(changes.oldPrice && { oldPrice: changes.oldPrice }),
-          ...(changes.newPrice && { newPrice: changes.newPrice }),
-          ...(changes.oldReorderLevel && { oldReorderLevel: changes.oldReorderLevel }),
-          ...(changes.newReorderLevel && { newReorderLevel: changes.newReorderLevel })
-        };
-
-        // Update the product
-        this.products[index] = { ...updatedProduct };
-
-        // Add the update to inventory updates
-        this.inventoryUpdates.unshift(update);
+        // salesHistory can also be loaded from backend if available
+      } catch (err) {
+        console.error('Failed to fetch data:', err);
       }
-
-      // Show success message
-      alert('Inventory updated successfully!');
     },
 
-    // Also improve the deleteProduct method to track deletions
-    deleteProduct(productToDelete) {
-      const index = this.products.findIndex(p => p.id === productToDelete.id);
-      if (index !== -1) {
-        // Create a delete update record before removing the product
-        const update = {
-          timestamp: new Date().toISOString(),
-          productId: productToDelete.id,
-          oldQuantity: productToDelete.stock,
-          newQuantity: 0,
-          type: 'delete',
-          user: 'admin',
-          productName: productToDelete.name
-        };
+    async addProduct(newProduct) {
+  try {
+    const response = await fetch('http://localhost/backend/api/products.php', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(newProduct)
+    });
 
-        // Add the update to inventory updates
-        this.inventoryUpdates.unshift(update);
+    const result = await response.json();
 
-        // Remove the product
-        this.products.splice(index, 1);
-        alert(`"${productToDelete.name}" has been deleted.`);
+    if (result.success) {
+      alert('Product added successfully!');
+      await this.loadData(); // ✅ This is required to update the UI
+    } else {
+      alert('Failed to add product: ' + result.message);
+    }
+  } catch (error) {
+    console.error('Error adding product:', error);
+    alert('Error occurred while adding product.');
+  }
+},
+
+async updateProduct(updatedProduct) {
+  try {
+    const response = await fetch(`http://localhost/backend/api/products.php?id=${updatedProduct.id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        name: updatedProduct.name,
+        category: updatedProduct.category,
+        price: updatedProduct.price,
+        stock: updatedProduct.stock,
+        reorderLevel: updatedProduct.reorderLevel
+      })
+    });
+
+    const result = await response.json();
+
+    if (result.success) {
+      alert('Product updated successfully!');
+      await this.loadData(); 
+      // Optionally update local product list here
+    } else {
+      alert('Update failed: ' + result.message);
+    }
+  } catch (error) {
+    console.error('Error updating product:', error);
+    alert('Error occurred while updating product.');
+  }
+},
+
+
+     async deleteProduct(product) {
+    if (!confirm(`Are you sure you want to delete "${product.name}"?`)) return;
+
+    try {
+      const response = await fetch(`http://localhost/backend/api/products.php?id=${product.id}`, {
+        method: 'DELETE',
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        alert('Product deleted successfully!');
+        await this.loadData(); 
+      } else {
+        alert('Failed to delete: ' + result.message);
       }
+    } catch (error) {
+      console.error('Error deleting product:', error);
+      alert('Error occurred while deleting product.');
     }
   }
+}
 };
 </script>
 

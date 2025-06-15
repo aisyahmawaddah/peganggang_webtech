@@ -67,6 +67,7 @@
                 <button @click="deleteProduct(product)" class="btn btn-danger btn-sm">
                   <i class="bi bi-trash"></i>
                 </button>
+
               </div>
 
               </div>
@@ -135,12 +136,13 @@ export default {
       this.mode = 'edit';
       alert(`Product "${newProduct.name}" added successfully!`);
     },
-    deleteProduct(product) {
-      const confirmDelete = confirm(`Are you sure you want to delete "${product.name}"?`);
-      if (confirmDelete) {
-        this.$emit('delete-product', product);
-      }
-    },
+        deleteProduct(product) {
+        const confirmDelete = confirm(`Are you sure you want to delete "${product.name}"?`);
+        if (confirmDelete) {
+          this.$emit('delete-product', product);
+        }
+      },
+
     getCategories() {
       if (this.products && this.products.length > 0) {
         const uniqueCategories = [...new Set(this.products.map(p => p.category))];

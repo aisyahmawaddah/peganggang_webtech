@@ -108,15 +108,14 @@ class Product {
     }
 
     // Delete product
-    function delete() {
-        $query = "DELETE FROM " . $this->table_name . " WHERE id = ?";
-        $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(1, $this->id);
+   public function delete()
+        {
+            $query = "DELETE FROM " . $this->table_name . " WHERE id = :id";
+            $stmt = $this->conn->prepare($query);
+            $stmt->bindParam(':id', $this->id, PDO::PARAM_INT);
 
-        if($stmt->execute()) {
-            return true;
+            return $stmt->execute();
         }
-        return false;
-    }
+
 }
 ?>
