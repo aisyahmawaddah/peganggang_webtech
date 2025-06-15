@@ -1,13 +1,64 @@
 <?php
-// Enable CORS for Vue.js frontend
-header('Access-Control-Allow-Origin: http://localhost:8080');
-header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type, Authorization');
-header('Content-Type: application/json');
+// backend/config/database.php
 
-// Handle preflight requests
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    http_response_code(200);
-    exit();
+class Database {
+    // Database configuration
+    private $host = 'localhost';
+    private $db_name = 'flexstock_inventory';
+    private $username = 'root';
+    private $password = '';
+    private $charset = 'utf8mb4';
+    
+    // Database connection
+    private $conn;
+    
+    /**
+     * Get database connection
+     * @return PDO|null
+     */
+    public function getConnection() {
+        $this->conn = null;
+        
+        try {
+            // Data Source Name
+            $dsn = "mysql:host=" . $this->host . ";dbname=" . $this->db_name . ";charset=" . $this->charset;
+            
+            // PDO options
+            $options = [
+                PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                PDO::ATTR_EMULATE_PREPARES   => false,
+                PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8mb4"
+            ];
+            
+            // Create PDO instance
+            $this->conn = new PDO($dsn, $this->username, $this->password, $options);
+            
+        } catch(PDOException $exception) {
+            // Log error (in production, you'd log this to a file)
+            error_log("Database connection error: " . $exception->getMessage());
+            
+            // Return null on connection failure
+            return null;
+        }
+        
+        return $this->conn;
+    }
+    
+    /**
+     * Close database connection
+     */
+    public function closeConnection() {
+        $this->conn = null;
+    }
+    
+    /**
+     * Test database connection
+     * @return bool
+     */
+    public function testConnection() {
+        $connection = $this->getConnection();
+        return $connection !== null;
+    }
 }
 ?>
