@@ -12,8 +12,9 @@
       </button>
     </div>
 
-    <div class="stats-grid">
-      <!-- Total Products Card -->
+    <!-- Show either stats grid OR product panel, not both -->
+    <div v-if="!showPanel" class="stats-grid">
+      <!-- Row 1: Total Products | Categories -->
       <div
         class="stat-card"
         @click="showProductList('all')"
@@ -37,9 +38,20 @@
         </div>
       </div>
 
-      <!-- Low Stock Card -->
       <div
         class="stat-card"
+        @click="showProductList('categories')"
+        :class="{ active: activeCard === 'categories' }"
+      >
+        <div class="stat-info">
+          <div class="stat-value blue">{{ categories.length }}</div>
+          <div class="stat-label">Categories</div>
+        </div>
+      </div>
+
+      <!-- Row 2: Low Stock | Out of Stock -->
+      <div
+        class="stat-card alert-card"
         @click="showProductList('low')"
         :class="{ active: activeCard === 'low' }"
       >
@@ -61,9 +73,8 @@
         </div>
       </div>
 
-      <!-- Out of Stock Card -->
       <div
-        class="stat-card"
+        class="stat-card alert-card"
         @click="showProductList('out')"
         :class="{ active: activeCard === 'out' }"
       >
@@ -85,7 +96,7 @@
         </div>
       </div>
 
-      <!-- Total Sales Card -->
+      <!-- Row 3: Total Sales | Inventory Value -->
       <div
         class="stat-card"
         @click="showProductList('sales')"
@@ -114,19 +125,6 @@
         </div>
       </div>
 
-      <!-- Categories Card -->
-      <div
-        class="stat-card"
-        @click="showProductList('categories')"
-        :class="{ active: activeCard === 'categories' }"
-      >
-        <div class="stat-info">
-          <div class="stat-value blue">{{ categories.length }}</div>
-          <div class="stat-label">Categories</div>
-        </div>
-      </div>
-
-      <!-- Inventory Value Card -->
       <div class="stat-card">
         <div class="stat-info">
           <div class="stat-value purple">
@@ -151,13 +149,25 @@
       </div>
     </div>
 
-    <!-- Product List Panel -->
-    <div v-if="showPanel" class="product-panel">
+    <!-- Product List Panel - Now appears inside the card -->
+    <div v-if="showPanel" class="product-panel-inside">
       <div class="panel-header">
         <h3 class="panel-title">{{ panelTitle }}</h3>
-        <button @click="closePanel" class="close-btn">
-          <i class="bi bi-x-lg"></i>
-        </button>
+        <div class="panel-actions">
+          <!-- Show "Back to Categories" if viewing products within a category -->
+          <button 
+            v-if="activeCard === 'categories' && selectedCategory" 
+            @click="backToCategories" 
+            class="back-to-categories-btn"
+          >
+            <i class="bi bi-arrow-left"></i>
+            <span>Back to Categories</span>
+          </button>
+          <button @click="closePanel" class="close-btn">
+            <i class="bi bi-arrow-left"></i>
+            <span>Back</span>
+          </button>
+        </div>
       </div>
       <div class="panel-content">
         <div v-if="filteredProducts.length === 0" class="no-data">
@@ -176,7 +186,7 @@
               <div class="product-category">{{ product.category }}</div>
             </div>
             <div class="product-stats">
-              <div class="product-price">RM{{ product.price }}</div>
+              <div class="product-price" v-if="!product.isCategory">RM{{ product.price }}</div>
               <div class="product-stock" :class="getStockClass(product)">
                 {{ product.isCategory ? `${product.stock} products` : `${product.stock} units` }}
               </div>
@@ -189,7 +199,7 @@
       </div>
     </div>
 
-    <!-- Recent Activity Section -->
+    <!-- Recent Activity Section - Only show when panel is closed -->
     <div class="recent-activity" v-if="!showPanel && recentUpdates.length > 0">
       <div class="section-title">Recent Activity</div>
       <div class="activity-list">
@@ -248,6 +258,7 @@ export default {
       outOfStockTrend: 0,
       salesTrend: 0,
       lastUpdated: new Date(),
+      selectedCategory: null, // For tracking which category is selected
     };
   },
   computed: {
@@ -295,6 +306,11 @@ export default {
         return [...this.products].sort((a, b) => (b.sales || 0) - (a.sales || 0));
       }
       if (this.activeCard === "categories") {
+        // If a specific category is selected, show products from that category
+        if (this.selectedCategory) {
+          return this.products.filter((p) => p.category === this.selectedCategory);
+        }
+        // Otherwise, show list of categories with product counts
         return this.categories.map((category) => ({
           id: `category-${category}`,
           name: category,
@@ -304,6 +320,10 @@ export default {
           isCategory: true,
         }));
       }
+      if (this.activeCard === "category-products") {
+        // Show products from selected category
+        return this.products.filter((p) => p.category === this.selectedCategory);
+      }
       return [];
     },
     panelTitle() {
@@ -312,7 +332,8 @@ export default {
         low: "Low Stock Products",
         out: "Out of Stock Products",
         sales: "Top Selling Products",
-        categories: "Categories",
+        categories: this.selectedCategory ? `${this.selectedCategory} Products` : "Categories",
+        "category-products": `${this.selectedCategory} Products`,
       };
       return titles[this.activeCard] || "";
     },
@@ -359,12 +380,21 @@ export default {
       this.activeCard = type;
       this.showPanel = true;
     },
+    backToCategories() {
+      this.selectedCategory = null; // Clear selected category to show category list
+    },
     closePanel() {
       this.showPanel = false;
       this.activeCard = null;
+      this.selectedCategory = null; // Reset selected category
     },
     navigateToUpdatePage(product) {
-      if (product.isCategory) return; // Don't navigate for category items
+      // If it's a category item, show products in that category
+      if (product.isCategory) {
+        this.selectedCategory = product.name;
+        this.activeCard = "categories"; // Stay in categories mode but show products
+        return;
+      }
       
       // Store the product to edit
       localStorage.setItem("editProduct", JSON.stringify(product));
@@ -532,7 +562,8 @@ export default {
 
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: 1fr 1fr; /* 2 columns */
+  grid-template-rows: repeat(3, 1fr); /* 3 rows */
   gap: 15px;
   margin-bottom: 20px;
 }
@@ -558,6 +589,35 @@ export default {
   border-color: #007bff;
 }
 
+/* Alert cards with pulsing red border animation */
+.alert-card {
+  border: 2px solid #ff4757;
+  box-shadow: 0 0 20px rgba(255, 71, 87, 0.3);
+  animation: pulseAlert 2s infinite;
+}
+
+@keyframes pulseAlert {
+  0% {
+    border-color: #ff4757;
+    box-shadow: 0 0 20px rgba(255, 71, 87, 0.3);
+  }
+  50% {
+    border-color: #ff6b7a;
+    box-shadow: 0 0 30px rgba(255, 71, 87, 0.6);
+  }
+  100% {
+    border-color: #ff4757;
+    box-shadow: 0 0 20px rgba(255, 71, 87, 0.3);
+  }
+}
+
+.alert-card:hover {
+  background: rgba(255, 255, 255, 0.12);
+  transform: translateY(-2px);
+  /* Keep the alert animation even on hover */
+  animation: pulseAlert 2s infinite;
+}
+
 .stat-info {
   margin-bottom: 8px;
 }
@@ -568,11 +628,11 @@ export default {
   margin-bottom: 4px;
 }
 
-.stat-value.blue { color: #4a9eff; }
-.stat-value.yellow { color: #ffc107; }
-.stat-value.red { color: #dc3545; }
-.stat-value.green { color: #28a745; }
-.stat-value.purple { color: #6f42c1; }
+.stat-value.blue { color: #87CEEB; } /* Sky Blue - light and visible */
+.stat-value.yellow { color: #FFE135; } /* Bright Yellow - stands out well */
+.stat-value.red { color: #FF6B6B; } /* Coral Red - soft but visible */
+.stat-value.green { color: #98FB98; } /* Pale Green - light pastel */
+.stat-value.purple { color: #DDA0DD; } /* Plum - soft purple pastel */
 
 .stat-label {
   font-size: 0.85rem;
@@ -614,16 +674,12 @@ export default {
   color: #ccc;
 }
 
-/* Product Panel Styles */
-.product-panel {
-  position: fixed;
-  top: 0;
-  right: 0;
-  width: 400px;
-  height: 100vh;
-  background: #2a2a2a;
-  border-left: 1px solid rgba(255, 255, 255, 0.2);
-  z-index: 1000;
+/* NEW: Product Panel Inside Styles - Replace the old fixed sidebar */
+.product-panel-inside {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  min-height: 400px;
   display: flex;
   flex-direction: column;
 }
@@ -632,41 +688,74 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px;
+  padding: 16px 20px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px 8px 0 0;
+}
+
+.panel-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.back-to-categories-btn {
+  background: rgba(74, 158, 255, 0.2);
+  border: 1px solid rgba(74, 158, 255, 0.3);
+  color: #4a9eff;
+  padding: 6px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.85rem;
+  transition: all 0.3s ease;
+}
+
+.back-to-categories-btn:hover {
+  background: rgba(74, 158, 255, 0.3);
+  border-color: rgba(74, 158, 255, 0.4);
 }
 
 .panel-title {
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   font-weight: 600;
   margin: 0;
   color: white;
 }
 
 .close-btn {
-  background: none;
-  border: none;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   color: white;
-  font-size: 1.2rem;
+  padding: 8px 12px;
+  border-radius: 6px;
   cursor: pointer;
-  padding: 8px;
-  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
 }
 
 .close-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
 }
 
 .panel-content {
   flex: 1;
   overflow-y: auto;
-  padding: 20px;
+  padding: 15px;
+  max-height: 350px;
 }
 
 .product-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
 }
 
 .product-item {
@@ -675,13 +764,16 @@ export default {
   gap: 12px;
   padding: 12px;
   background: rgba(255, 255, 255, 0.05);
-  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
   cursor: pointer;
-  transition: background 0.3s ease;
+  transition: all 0.3s ease;
 }
 
 .product-item:hover {
   background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.15);
+  transform: translateX(4px);
 }
 
 .product-info {
@@ -692,10 +784,11 @@ export default {
   font-weight: 600;
   color: white;
   margin-bottom: 4px;
+  font-size: 0.95rem;
 }
 
 .product-category {
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   color: #ccc;
 }
 
@@ -707,10 +800,11 @@ export default {
   font-weight: 600;
   color: #4a9eff;
   margin-bottom: 4px;
+  font-size: 0.9rem;
 }
 
 .product-stock {
-  font-size: 0.85rem;
+  font-size: 0.8rem;
 }
 
 .stock-good { color: #28a745; }
@@ -719,6 +813,7 @@ export default {
 
 .product-action {
   color: #ccc;
+  font-size: 0.9rem;
 }
 
 /* Recent Activity Styles */
@@ -800,8 +895,12 @@ export default {
     font-size: 1.4rem;
   }
   
-  .product-panel {
-    width: 100%;
+  .product-panel-inside {
+    min-height: 300px;
+  }
+  
+  .panel-content {
+    max-height: 250px;
   }
 }
 </style>
