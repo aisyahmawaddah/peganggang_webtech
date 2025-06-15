@@ -7,7 +7,7 @@
         <inventory-overview :products="products"></inventory-overview>
       </div>
       <div class="col-md-8">
-        <sales-trend :sales="sales"></sales-trend>
+        <sales-trend :products="products" :sales="sales"></sales-trend>
       </div>
     </div>
     
