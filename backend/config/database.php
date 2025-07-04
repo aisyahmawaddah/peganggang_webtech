@@ -3,10 +3,10 @@
 
 class Database {
     // Database configuration
-    private $host = 'localhost';
-    private $db_name = 'flexstock_inventory';
-    private $username = 'root';
-    private $password = '';
+    private $host = 'sql203.infinityfree.com';
+    private $db_name = 'if0_39389102_flexstock_inventory';
+    private $username = 'if0_39389102';
+    private $password = 'pV7jQiQLXULzDj1';
     private $charset = 'utf8mb4';
     
     // Database connection
