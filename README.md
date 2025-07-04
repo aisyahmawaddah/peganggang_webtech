@@ -2,6 +2,8 @@
 
 A Vue.js + PHP inventory management system with real-time dashboard, smart recommendations, and CRUD operations.
 
+Live Project URL : https://harmonious-paprenjak-0b8206.netlify.app/
+
 ## 🚀 Quick Setup
 
 ### Prerequisites
@@ -130,12 +132,6 @@ CREATE TABLE inventory_updates (
     FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE SET NULL
 );
 ```
-
-### Sample Data
-The seed.sql includes:
-- 7 sample products across Electronics, Gaming, and Accessories categories
-- Products with realistic stock levels, prices, and sales data
-- Sample inventory update records for activity tracking
 
 ## 🚦 Usage
 1. Access frontend at `http://localhost:8080`
