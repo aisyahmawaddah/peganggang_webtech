@@ -16,7 +16,7 @@
         <category-performance :products="products"></category-performance>
       </div>
       <div class="col-md-6">
-        <recent-activity :updates="updates"></recent-activity>
+        <recent-activity :updates="updates" :products="products"></recent-activity>
       </div>
     </div>
     

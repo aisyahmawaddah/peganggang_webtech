@@ -24,15 +24,6 @@
       </div>
     </nav>
 
-    <!-- <main class="content">
-      <dashboard-page v-if="currentPage === 'dashboard'" 
-                     :products="products"
-                     :sales="salesHistory"
-                     :updates="inventoryUpdates"></dashboard-page>
-      <update-page v-if="currentPage === 'update'" 
-                  :products="products"
-                  @update-product="updateProduct"></update-page>
-    </main> -->
     <main class="content">
       <dashboard-page v-if="currentPage === 'dashboard'" :products="products" :sales="salesHistory"
         :updates="inventoryUpdates" />
@@ -43,8 +34,6 @@
       @update-product="updateProduct"
       @delete-product="deleteProduct" 
     />
-
-        
     </main>
   </div>
 </template>
@@ -74,11 +63,13 @@ export default {
 
     async loadData() {
       try {
+        // Fetch products
         const productsRes = await fetch('https://flexstock-api.duckdns.org/api/products.php');
         const productData = await productsRes.json();
         this.products = productData.data;
 
-        const updatesRes = await fetch('https://flexstock-api.duckdns.org/api/products.php');
+        // Fetch inventory updates
+        const updatesRes = await fetch('https://flexstock-api.duckdns.org/api/updates.php');
         const updateData = await updatesRes.json();
         this.inventoryUpdates = updateData.data;
 
@@ -114,6 +105,7 @@ export default {
 
 async updateProduct(updatedProduct) {
   try {
+    // 1. Update the product
     const response = await fetch(`https://flexstock-api.duckdns.org/api/products.php?id=${updatedProduct.id}`, {
       method: 'PUT',
       headers: {
@@ -131,9 +123,32 @@ async updateProduct(updatedProduct) {
     const result = await response.json();
 
     if (result.success) {
+      // 2. ALSO log the update activity
+      await fetch('https://flexstock-api.duckdns.org/api/updates.php', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          id: updatedProduct.id,
+          type: 'update',
+          user: 'admin',
+          product_name: updatedProduct.name,
+          old_quantity: updatedProduct.originalStock || updatedProduct.stock,
+          new_quantity: updatedProduct.stock,
+          old_price: updatedProduct.originalPrice || updatedProduct.price,
+          new_price: updatedProduct.price,
+          old_category: updatedProduct.originalCategory || updatedProduct.category,
+          new_category: updatedProduct.category,
+          old_name: updatedProduct.originalName || updatedProduct.name,
+          new_name: updatedProduct.name,
+          old_reorder_level: updatedProduct.originalReorderLevel || updatedProduct.reorderLevel,
+          new_reorder_level: updatedProduct.reorderLevel
+        })
+      });
+
       alert('Product updated successfully!');
       await this.loadData(); 
-      // Optionally update local product list here
     } else {
       alert('Update failed: ' + result.message);
     }
@@ -142,7 +157,6 @@ async updateProduct(updatedProduct) {
     alert('Error occurred while updating product.');
   }
 },
-
 
      async deleteProduct(product) {
     if (!confirm(`Are you sure you want to delete "${product.name}"?`)) return;
@@ -155,6 +169,20 @@ async updateProduct(updatedProduct) {
       const result = await response.json();
 
       if (result.success) {
+        // Log the deletion activity
+        await fetch('https://flexstock-api.duckdns.org/api/updates.php', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            id: product.id,
+            type: 'delete',
+            user: 'admin',
+            product_name: product.name
+          })
+        });
+
         alert('Product deleted successfully!');
         await this.loadData(); 
 

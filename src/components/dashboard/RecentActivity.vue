@@ -70,7 +70,7 @@
               <div class="activity-main">
                 <div class="activity-text">{{ getActivityText(activity) }}</div>
                 <div class="activity-meta">
-                  <span class="activity-user">{{ activity.user || 'system' }}</span>
+                  <span class="activity-user">{{ activity.user || 'System' }}</span>
                   <span class="activity-time">{{ formatTimeAgo(activity.timestamp) }}</span>
                 </div>
               </div>
@@ -139,7 +139,7 @@ export default {
       }).length;
     },
     activeUsers() {
-      const users = new Set(this.updates.map(activity => activity.user || 'system'));
+      const users = new Set(this.updates.map(activity => activity.user || 'System'));
       return users.size;
     },
     filteredActivities() {
@@ -207,6 +207,17 @@ export default {
     getActivityText(activity) {
       const productName = this.getProductName(activity);
       
+      // Fix the undefined issue by checking if productName is valid
+      if (!productName || productName === 'Unknown Product' || productName.includes('Unknown') || productName.includes('undefined')) {
+        // Don't show confusing "Product undefined was modified"
+        if (activity.type === 'sale') return 'Product sale recorded';
+        if (activity.type === 'restock') return 'Product restocked';
+        if (activity.type === 'add') return 'New product added';
+        if (activity.type === 'delete') return 'Product removed';
+        if (activity.type === 'edit' || activity.type === 'update') return 'Product updated';
+        return `Product ${activity.type || 'modified'}`;
+      }
+      
       if (activity.type === 'sale') {
         const quantitySold = (activity.old_quantity || 0) - (activity.new_quantity || 0);
         return `${productName} - ${quantitySold} units sold`;
@@ -270,6 +281,11 @@ export default {
         return `Stock: ${activity.old_quantity} → ${activity.new_quantity}`;
       }
       
+      // Handle your database structure with specific old/new values
+      if (activity.old_quantity && activity.new_quantity && activity.old_quantity !== activity.new_quantity) {
+        return `Quantity: ${activity.old_quantity} → ${activity.new_quantity}`;
+      }
+      
       return null;
     },
     
@@ -295,11 +311,40 @@ export default {
     },
     
     getProductName(activity) {
-      // Try different name sources
-      return activity.product_name || 
-             activity.current_product_name || 
-             activity.new_name || 
-             `Product ${activity.product_id}`;
+      // First try to get the product name from the activity record
+      if (activity.product_name && activity.product_name !== 'undefined' && activity.product_name !== 'NULL') {
+        return activity.product_name;
+      }
+      
+      // If new_name exists, use it (for name changes)
+      if (activity.new_name && activity.new_name !== 'undefined' && activity.new_name !== 'NULL') {
+        return activity.new_name;
+      }
+      
+      // If old_name exists, use it
+      if (activity.old_name && activity.old_name !== 'undefined' && activity.old_name !== 'NULL') {
+        return activity.old_name;
+      }
+      
+      // Try to find product by product_id in the products array
+      if (activity.product_id && this.products && this.products.length > 0) {
+        const product = this.products.find(p => p.id === activity.product_id);
+        if (product && product.name && product.name !== 'undefined') {
+          return product.name;
+        }
+      }
+      
+      // Additional fallbacks - check different possible property names
+      if (activity.name && activity.name !== 'undefined' && activity.name !== 'NULL') {
+        return activity.name;
+      }
+      
+      if (activity.productName && activity.productName !== 'undefined' && activity.productName !== 'NULL') {
+        return activity.productName;
+      }
+      
+      // Fallback using product_id
+      return activity.product_id ? `Product #${activity.product_id}` : 'Unknown Product';
     },
     
     getActivityIcon(type) {
@@ -335,20 +380,48 @@ export default {
     },
     
     formatTimeAgo(timestamp) {
-      const date = new Date(timestamp);
-      const now = new Date();
-      const diff = now - date;
+      if (!timestamp || timestamp === null || timestamp === undefined) {
+        return 'Just now';
+      }
       
-      const minutes = Math.floor(diff / 60000);
-      const hours = Math.floor(diff / 3600000);
-      const days = Math.floor(diff / 86400000);
-      
-      if (minutes < 1) return 'Just now';
-      if (minutes < 60) return `${minutes}m ago`;
-      if (hours < 24) return `${hours}h ago`;
-      if (days < 7) return `${days}d ago`;
-      
-      return date.toLocaleDateString();
+      try {
+        let date;
+        
+        // Handle your database timestamp format: "2025-07-04 09:47:23"
+        if (typeof timestamp === 'string') {
+          // Replace space with 'T' to make it ISO format if needed
+          if (timestamp.includes(' ') && !timestamp.includes('T')) {
+            timestamp = timestamp.replace(' ', 'T');
+          }
+          date = new Date(timestamp);
+        } else if (timestamp instanceof Date) {
+          date = timestamp;
+        } else if (typeof timestamp === 'number') {
+          date = new Date(timestamp < 10000000000 ? timestamp * 1000 : timestamp);
+        } else {
+          return 'Just now';
+        }
+        
+        // Check if date is valid
+        if (isNaN(date.getTime())) {
+          return 'Just now';
+        }
+        
+        const now = new Date();
+        const diffMs = now - date;
+        const diffMins = Math.floor(diffMs / 60000);
+        const diffHours = Math.floor(diffMs / 3600000);
+        const diffDays = Math.floor(diffMs / 86400000);
+
+        if (diffMins < 1) return 'Just now';
+        if (diffMins < 60) return `${diffMins}m ago`;
+        if (diffHours < 24) return `${diffHours}h ago`;
+        if (diffDays < 7) return `${diffDays}d ago`;
+        
+        return date.toLocaleDateString();
+      } catch (error) {
+        return 'Just now';
+      }
     }
   }
 };

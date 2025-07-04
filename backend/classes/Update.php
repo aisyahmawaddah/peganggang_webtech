@@ -21,13 +21,19 @@ class Update {
 
     // Create update record
     function create($data) {
+        // Force current Malaysia time if no timestamp provided
+        if (!isset($data['timestamp']) || empty($data['timestamp'])) {
+            $data['timestamp'] = date('Y-m-d H:i:s', time() + (8 * 3600)); // Add 8 hours to UTC
+        }
+        
         $query = "INSERT INTO " . $this->table_name . " 
                   SET product_id=:product_id, old_quantity=:old_quantity, 
                       new_quantity=:new_quantity, type=:type, user=:user, 
                       product_name=:product_name, old_name=:old_name, 
                       new_name=:new_name, old_price=:old_price, new_price=:new_price,
                       old_category=:old_category, new_category=:new_category,
-                      old_reorder_level=:old_reorder_level, new_reorder_level=:new_reorder_level";
+                      old_reorder_level=:old_reorder_level, new_reorder_level=:new_reorder_level,
+                      timestamp=:timestamp";
 
         $stmt = $this->conn->prepare($query);
 
@@ -45,6 +51,7 @@ class Update {
         $stmt->bindParam(":new_category", $data['new_category']);
         $stmt->bindParam(":old_reorder_level", $data['old_reorder_level']);
         $stmt->bindParam(":new_reorder_level", $data['new_reorder_level']);
+        $stmt->bindParam(":timestamp", $data['timestamp']);
 
         return $stmt->execute();
     }

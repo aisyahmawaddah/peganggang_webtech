@@ -1,4 +1,7 @@
 <?php
+// Set timezone to Malaysia
+date_default_timezone_set('Asia/Kuala_Lumpur');
+
 // backend/api/updates.php
 
 // Include CORS configuration
@@ -98,7 +101,7 @@ try {
             break;
         }
 
-        // Then: log the update in inventory_updates
+        // Then: log the update in inventory_updates with current timestamp
         $update_data = [
             'product_id' => $product_data['id'],
             'old_quantity' => $data['old_quantity'] ?? null,
@@ -113,7 +116,8 @@ try {
             'old_category' => $data['old_category'] ?? null,
             'new_category' => $data['new_category'] ?? null,
             'old_reorder_level' => $data['old_reorder_level'] ?? null,
-            'new_reorder_level' => $data['new_reorder_level'] ?? null
+            'new_reorder_level' => $data['new_reorder_level'] ?? null,
+            'timestamp' => date('Y-m-d H:i:s', time() + (8 * 3600)) // Force Malaysia time
         ];
 
         if ($update->create($update_data)) {
