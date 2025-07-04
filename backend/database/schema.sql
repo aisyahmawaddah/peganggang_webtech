@@ -1,6 +1,5 @@
 -- Create database
-CREATE DATABASE flexstock_inventory;
-USE flexstock_inventory;
+USE peganggang_db;
 
 -- Products table (matching your Vue.js data structure)
 CREATE TABLE products (

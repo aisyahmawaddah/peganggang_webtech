@@ -4,9 +4,9 @@
 class Database {
     // Database configuration
     private $host = 'localhost';
-    private $db_name = 'flexstock_inventory';
-    private $username = 'root';
-    private $password = '';
+    private $db_name = 'peganggang_db';
+    private $username = 'peganggang_user';
+    private $password = 'Peganggang1!';
     private $charset = 'utf8mb4';
     
     // Database connection
