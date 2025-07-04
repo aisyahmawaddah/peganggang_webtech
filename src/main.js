@@ -6,7 +6,7 @@ import 'bootstrap/dist/js/bootstrap.bundle.min.js'
 import 'bootstrap-icons/font/bootstrap-icons.css'
 
 // Configure axios defaults - CORRECT URL for your setup
-axios.defaults.baseURL = 'http://localhost/backend/api'
+axios.defaults.baseURL = 'https://flexstock-api.duckdns.org/api'
 axios.defaults.headers.common['Content-Type'] = 'application/json'
 axios.defaults.headers.common['Accept'] = 'application/json'
 axios.defaults.withCredentials = false

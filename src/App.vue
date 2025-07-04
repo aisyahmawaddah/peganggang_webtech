@@ -74,11 +74,11 @@ export default {
 
     async loadData() {
       try {
-        const productsRes = await fetch('http://134.199.237.121/api/products.php');
+        const productsRes = await fetch('https://flexstock-api.duckdns.org/api/products.php');
         const productData = await productsRes.json();
         this.products = productData.data;
 
-        const updatesRes = await fetch('http://134.199.237.121/api/products.php');
+        const updatesRes = await fetch('https://flexstock-api.duckdns.org/api/products.php');
         const updateData = await updatesRes.json();
         this.inventoryUpdates = updateData.data;
 
@@ -90,7 +90,7 @@ export default {
 
     async addProduct(newProduct) {
   try {
-    const response = await fetch('http://134.199.237.121/api/products.php', {
+    const response = await fetch('https://flexstock-api.duckdns.org/api/products.php', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -114,7 +114,7 @@ export default {
 
 async updateProduct(updatedProduct) {
   try {
-    const response = await fetch(`http://134.199.237.121/api/products.php?id=${updatedProduct.id}`, {
+    const response = await fetch(`https://flexstock-api.duckdns.org/api/products.php?id=${updatedProduct.id}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json'
@@ -148,7 +148,7 @@ async updateProduct(updatedProduct) {
     if (!confirm(`Are you sure you want to delete "${product.name}"?`)) return;
 
     try {
-      const response = await fetch(`http://134.199.237.121/api/products.php?id=${product.id}`, {
+      const response = await fetch(`https://flexstock-api.duckdns.org/api/products.php?id=${product.id}`, {
         method: 'DELETE',
       });
 
