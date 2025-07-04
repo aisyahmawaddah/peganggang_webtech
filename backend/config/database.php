@@ -3,6 +3,7 @@
 
 class Database {
     // Database configuration
+
     private $host = 'localhost';
     private $db_name = 'peganggang_db';
     private $username = 'peganggang_user';
